@@ -268,6 +268,7 @@ import { setSessionLifecycleShutdown } from './services/session-lifecycle-hooks.
 import { setTurnResultRuntime } from './core/turn-result-runtime.js';
 
 import { setUsageLedgerPricingResolver, setUsageLedgerRecordSink } from './services/usage-ledger.js';
+import { startMarsDobbyLedger } from './marsdobby/ledger.js';
 import { trackBudgetSpend, formatBudgetAlert } from './services/budget-tracker.js';
 import { resolvePricingConfig } from './services/model-pricing.js';
 import { createImgNumberer, extractPostAtParticipants, isPlaceholderOnlyText, messageMentionsBot, parseApiMessage, parseEventMessage, resolveNonsupportMessage, stripBotMentions, stripLeadingMentions, type MessageResource } from './im/lark/message-parser.js';
@@ -35366,7 +35367,9 @@ export async function startDaemon(botIndex?: number): Promise<void> {
   };
   const memoryAdmissionOwnerAlerts = new WorkerAdmissionOwnerAlerts(ownerAlertDependencies);
   const workerOwnerDiagnostics = new WorkerOwnerDiagnostics(ownerAlertDependencies);
+  const marsdobbyLedger = startMarsDobbyLedger({ larkAppId: cfg.larkAppId, cliId: cfg.cliId });
   initWorkerPool({
+    onTurnResult: marsdobbyLedger?.onTurnResult,
     onOwnerDiagnostic: (ds, diagnostic) =>
       workerOwnerDiagnostics.report(ds.larkAppId, ds.session.sessionId, diagnostic),
     larkAppId: cfg.larkAppId,
